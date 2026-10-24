@@ -1,0 +1,45 @@
+# CI 项目
+name: zerowrt-update
+
+# CI 计划
+on:
+  # 工作流调用
+  workflow_call:
+
+# CI 环境
+env:
+  # GITHUB ENV
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+# CI 任务
+jobs:
+  zerowrt-update:
+    name: zerowrt-update
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          token: ${{secrets.WORKFLOW_TOKEN}}
+
+      - name: InitWorkflow
+        run: |
+          workflowPath="$(mktemp -d "$RUNNER_TEMP/ZeroDream-Workflow-XXXXXX")"
+          git clone --depth=1 https://github.com/zero-dream/github-action.git "$workflowPath/" || exit 1
+          chmod +x "$workflowPath/zerodream/init/init.sh"
+          bash "$workflowPath/zerodream/init/init.sh"
+          rm -rf "$workflowPath/"
+
+      - name: InitEnvVar
+        run: |
+          source "$ZD_ScriptPath/setEnv.sh"
+          setEnv 'ZERO_LIB_REPO' "$ZD_Owner/github-library"
+          setEnv 'WRT_BRANCH' 'master'
+          setEnv 'WRT_REPO' 'https://github.com/openwrt/packages.git'
+
+      - name: UpdateRepo
+        run: |
+          bash "$CI_ScriptPath/UpdateGolang.sh"
+        env:
+          GH_TOKEN: ${{secrets.WORKFLOW_TOKEN}}
+          ZeroDream_Secret: ${{secrets.ZERODREAM_SECRET}}

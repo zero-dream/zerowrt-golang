@@ -1,0 +1,25 @@
+# CI 项目
+name: update-golang
+
+# CI 权限
+permissions: write-all
+
+# CI 计划
+on:
+  # 自动运行
+  schedule:
+    - cron: 0 16 * * * # 每天 00:00
+  # 手动运行
+  workflow_dispatch:
+
+# CI 环境
+env:
+  # GITHUB ENV
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+# CI 任务
+jobs:
+  update-golang:
+    name: update-golang
+    uses: ./.github/workflows/zerowrt-update.yml
+    secrets: inherit
